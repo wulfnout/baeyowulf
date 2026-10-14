@@ -1284,9 +1284,10 @@ function renderView(scrollTop){
 /* tint: page header colors come from the cover art */
 const palCache = {};
 function setTint(a, rgb){
+  /* page tops, top bar and mini player use a deep shade of the chosen accent color, never a color pulled from cover art */
   if (rgb) return document.documentElement.style.setProperty("--tint", rgb);
-  if (!a) return document.documentElement.style.setProperty("--tint", hexToRgb(BACKS[theme.back]?.storm2 || "#1d2236").map(v => Math.min(255, v + 18)).join(","));
-  relPalette(a).then(p => { if (view.name === "release" && view.arg !== a.id) return; document.documentElement.style.setProperty("--tint", p.tint.join(",")); });
+  const [h, sat] = rgb2hsv(hexToRgb(ACCENTS[theme.accent] || ACCENTS.Moonlight));
+  document.documentElement.style.setProperty("--tint", hsv2rgb(h, Math.min(.62, Math.max(.35, sat * 1.4)), .26).join(","));
 }
 
 /* ======================= VIEWS ======================= */
@@ -1425,7 +1426,7 @@ function profileHTML(){
   </div></div>`;
 }
 document.addEventListener("click", async e => {
-  const ac = e.target.closest("[data-accent]"); if (ac) { theme.accent = ac.dataset.accent; saveTheme(); $$("[data-accent]").forEach(b => b.setAttribute("aria-checked", b === ac)); return; }
+  const ac = e.target.closest("[data-accent]"); if (ac) { theme.accent = ac.dataset.accent; saveTheme(); setTint(null); $$("[data-accent]").forEach(b => b.setAttribute("aria-checked", b === ac)); return; }
   const bg = e.target.closest("[data-back]"); if (bg) {
     const n = bg.dataset.back;
     if (n === "Your photo" && !theme.bgPath) { if (!session) { openAuth("signup", "Create a free account to use your own background photo."); return; } $("bgIn").click(); return; }
